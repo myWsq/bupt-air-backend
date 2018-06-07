@@ -21,3 +21,10 @@ python model.py
 # 运行开发服务器
 export FLASK_ENV=development
 flask run
+
+```
+
+#### Tip
+
+1. Flask [官方教程](http://flask.pocoo.org/)
+2. 负基础Flask[入门](https://wsq.cool/article/9.html)
