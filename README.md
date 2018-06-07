@@ -24,6 +24,32 @@ flask run
 
 ```
 
+#### 生产环境部署
+
+```bash
+
+cd bupt-air-backend
+
+# gunicorn
+gunicorn -w 4 app:app
+
+# Nginx
+
+server {
+    listen 80;
+    server_name example.org;
+    access_log  /var/log/nginx/example.log;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+  }
+
+```
+
+
 #### Tip
 
 1. Flask [官方教程](http://flask.pocoo.org/)
