@@ -19,6 +19,7 @@ pip install -r requirements.txt
 python model.py
 
 # 运行开发服务器
+<<<<<<< HEAD
 export FLASK_ENV=development
 flask run
 
@@ -28,3 +29,8 @@ flask run
 
 1. Flask [官方教程](http://flask.pocoo.org/)
 2. 负基础Flask[入门](https://wsq.cool/article/9.html)
+
+#### Test
+
+罗正雄的Git测试
+
