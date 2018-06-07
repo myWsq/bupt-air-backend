@@ -19,4 +19,5 @@ pip install -r requirements.txt
 python model.py
 
 # 运行开发服务器
-python app.py
+export FLASK_ENV=development
+flask run
