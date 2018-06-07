@@ -14,3 +14,7 @@ def connect_test():
     else:
         abort(502)
         
+
+@app.route('/')
+def index():
+    return 'hello world'
