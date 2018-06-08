@@ -32,7 +32,7 @@ class Request(BaseModel):
     slave_id = IntegerField()
     temp = FloatField()
     speed = IntegerField()
-    time = TimestampField()
+    time = TimeField()
 
 class Log(BaseModel):
     id = IntegerField(primary_key=True)
@@ -40,8 +40,8 @@ class Log(BaseModel):
     slave_id = IntegerField()
     speed = IntegerField()
     temp = FloatField()
-    req_time = TimestampField()
-    res_time = TimestampField()
+    req_time = TimeField()
+    res_time = TimeField()
     
 
 
