@@ -7,13 +7,15 @@ slave = Blueprint('slave', __name__)
 # 通过身份证id获取从机信息
 @slave.route("/check/<card_id>")
 def check(card_id):
-    return jsonify(Status.get(Status.card_id == card_id).__data__)
+    data = Status.get(Status.card_id == card_id).__data__
+    return jsonify(data)
 
 
 # 通过slave_id获取单个slave信息
 @slave.route("/<id>")
 def get_slave(id):
-    return jsonify(Status.get(Status.id == id).__data__)
+    data = Status.get(Status.id == id).__data__
+    return jsonify(data)
 
 
 # slave 设定温度升高/降低一度

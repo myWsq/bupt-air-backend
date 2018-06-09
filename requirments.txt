@@ -14,8 +14,11 @@ lazy-object-proxy==1.3.1
 MarkupSafe==1.0
 mccabe==0.6.1
 mysql-connector-python==8.0.11
+peewee==3.3.4
 protobuf==3.5.2.post1
 pylint==1.8.4
+PyMySQL==0.8.1
+python-dateutil==2.7.3
 requests==2.18.4
 six==1.11.0
 urllib3==1.22
