@@ -1,2 +1,3 @@
 from .slave import slave
-__all__ = ['slave']
+from .master import master
+__all__ = ['slave','master']

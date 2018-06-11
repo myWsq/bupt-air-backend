@@ -8,7 +8,7 @@ config = json.load(f)
 f.close()
 
 db = MySQLDatabase(**config)
-db.connect()
+db.connect(reuse_if_open=True)
 
 class BaseModel(Model):
      class Meta:
@@ -32,7 +32,7 @@ class Request(BaseModel):
     slave_id = IntegerField()
     temp = FloatField()
     speed = IntegerField()
-    time = TimeField()
+    time = DateTimeField()
 
 class Log(BaseModel):
     id = IntegerField(primary_key=True)
@@ -40,8 +40,8 @@ class Log(BaseModel):
     slave_id = IntegerField()
     speed = IntegerField()
     temp = FloatField()
-    req_time = TimeField()
-    res_time = TimeField()
+    req_time = DateTimeField()
+    res_time = DateTimeField()
     
 
 

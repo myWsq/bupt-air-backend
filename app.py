@@ -1,12 +1,13 @@
 from flask import Flask, request, abort,jsonify
 from flask_cors import CORS
-from route import slave
+from route import slave,master
 
 app = Flask(__name__)
 # 允许跨域访问
 CORS(app)
 # 注册子路由
 app.register_blueprint(slave,url_prefix='/slave')
+app.register_blueprint(master,url_prefix='/master')
 
 @app.route("/test")
 def connect_test():
