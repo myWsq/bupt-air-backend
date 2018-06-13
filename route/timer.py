@@ -16,7 +16,7 @@ executor = ThreadPoolExecutor(1)
 
 # 事务类
 class Todo:
-    counter = 0
+    counter = 0 1
 
     def run(self):
         while True:
