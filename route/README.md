@@ -52,3 +52,8 @@ app.register_blueprint(xxx,url_prefix='/xxx')
 4. `/slave/speed/<op>/<id>` 设定风速升高/降低一档(op='high' or 'low')
 5. `/slave/shuwdown/<id>` 关闭从机
 
+### /master
+
+1. `/master/temp/<op>/<id>` 调整对应从机温度
+2. `/master/speed/<op>/<id>` 调整对应从机温度
+3. `/master/request/all` 获取请求列表

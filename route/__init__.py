@@ -1,3 +1,4 @@
 from .slave import slave
 from .master import master
-__all__ = ['slave','master']
+from .timer import timer
+__all__ = ['slave','master','timer']
