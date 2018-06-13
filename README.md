@@ -19,18 +19,46 @@ pip install -r requirements.txt
 python model.py
 
 # 运行开发服务器
-<<<<<<< HEAD
 export FLASK_ENV=development
 flask run
 
 ```
+
+#### 生产环境部署
+
+```bash
+
+cd bupt-air-backend
+
+# gunicorn
+gunicorn -w 4 app:app
+
+# Nginx
+
+server {
+    listen 80;
+    server_name example.org;
+    access_log  /var/log/nginx/example.log;
+
+    location / {
+        proxy_pass http://127.0.0.1:8000;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+  }
+
+```
+
 
 #### Tip
 
 1. Flask [官方教程](http://flask.pocoo.org/)
 2. 负基础Flask[入门](https://wsq.cool/article/9.html)
 
-#### Test
+#### ORM
 
-罗正雄的Git测试
+>peewee is a small, expressive orm -- supports postgresql, mysql and sqlite 
 
+[官方文档](http://docs.peewee-orm.com/en/latest/peewee/quickstart.html)
+
+减少重复轮子
