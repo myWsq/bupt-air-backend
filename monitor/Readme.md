@@ -1,5 +1,5 @@
 先调用函数 
-```
+```bash
 init(slave_id,out_temp) 
 slave_id:从机编号
 out_temp:环境温度
