@@ -1,8 +1,14 @@
 from flask import Flask, request, abort,jsonify
 from flask_cors import CORS
+from route import slave,master,timer
+
 app = Flask(__name__)
 # 允许跨域访问
 CORS(app)
+# 注册子路由
+app.register_blueprint(slave,url_prefix='/slave')
+app.register_blueprint(master,url_prefix='/master')
+app.register_blueprint(timer,url_prefix='/timer')
 
 @app.route("/test")
 def connect_test():
@@ -13,8 +19,12 @@ def connect_test():
     # 否则报错
     else:
         abort(502)
-        
-# jjj
+
+
+
+
 @app.route('/')
 def index():
     return 'hello world'
+
+
