@@ -1,16 +1,31 @@
-### 字段描述
+### 函数原型：Generate_Report(Start_time ，end_time)
+
+#### 参数类型说明：
+
+Start_time: (datatime.date) 	//2018-6-10
+
+Start_time: (datatime.date)	//2018-6-11
+
+```python
+if __name__ == '__main__':
+    Start = datetime.date(2018, 6, 10)
+    End = datetime.date(2018, 6, 11)
+    Report = Generate_Report(Start, End)
+```
+
+#### 返回值类型说明：
+
+##### 字段描述
 
 | ID                 | Count        | Cost   | Record   |
 | ------------------ | ------------ | ------ | -------- |
 | 从控机ID，房间号码 | 开关机的次数 | 总花费 | 详细记录 |
 
-#### Record详细字段：
+#####Record详细字段：
 
 | S_time             | E_time             | Speed    | S_temp             | E_temp             |
 | ------------------ | ------------------ | -------- | ------------------ | ------------------ |
 | 一次调节的开始时间 | 一次调节的结束时间 | 期间风速 | 一次调节的开始温度 | 一次调节的结束温度 |
-
-
 
 ```js
 [
