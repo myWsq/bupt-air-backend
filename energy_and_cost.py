@@ -10,7 +10,8 @@ def cost(card_id,slave_id):
 	f.close()
 	db = pymysql.connect(**config)
 	cursor = db.cursor()
-	logs={'res_time':[],'speed':[]}
+	logs={'res_time':[],'speed':[]}#存放该从控机最近两次的日志
+	
 	# 选出该从控机最近两次的日志
 	cursor.execute("select speed,res_time from log where card_id=%s and slave_id=%s order by res_time desc limit 2"%(card_id,slave_id))
 	for log in cursor:
@@ -18,7 +19,6 @@ def cost(card_id,slave_id):
 		logs['speed'].append(log[0])
 
 	sub_time=(logs['res_time'][0]-logs['res_time'][1]).total_seconds()#最近两次request的时间差(以秒为单位)
-	print(sub_time)
 	if logs['speed'][1]==1:#上一次request是低速风，按每分钟0.8标准功率计算能量
 		energy=0.8*sub_time/60
 	elif logs['speed'][1]==3:#上一次request是高速风，按每分钟1.3标准功率计算能量
