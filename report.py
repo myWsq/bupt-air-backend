@@ -61,6 +61,7 @@ def Generate_Report(start, end):
         for num, each in enumerate(Report[n]['Record']):
             if not each:
                 del Report[n]['Record'][num]
+    cnx.close()
     return json.dumps(Report)
 
 def Cost(start, end, speed):
@@ -74,12 +75,4 @@ def Cost(start, end, speed):
         cost = (time.total_seconds() / 60) * 1.3 * 5
     # print(str(start) + '  ' + str(end) + '  ' + str(speed) + '  '+ str(time.total_seconds() / 60) + '  ' + str(cost))
     return cost
-
-
-if __name__ == '__main__':
-    Start = datetime.date(2018, 6, 10)
-    End = datetime.date(2018, 6, 11)
-    Report = Generate_Report(Start, End)
-    print(Report)
-    cnx.close()
 
