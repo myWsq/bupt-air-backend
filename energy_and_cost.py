@@ -14,7 +14,6 @@ def cost(card_id,slave_id):
 	# 选出该从控机最近两次的日志
 	cursor.execute("select speed,res_time from log where card_id=%s and slave_id=%s order by res_time desc limit 2"%(card_id,slave_id))
 	for log in cursor:
-		print(log)
 		logs['res_time'].append(log[1])
 		logs['speed'].append(log[0])
 
@@ -28,9 +27,6 @@ def cost(card_id,slave_id):
 		energy=1.0*sub_time/60
 	cost=5*energy#每标准能量5元
 
-	print(cost)
 	cursor.execute("update status set energy=energy+%s,amount=amount+%s where id=%s"%(energy,cost,slave_id))
 	db.commit()
 	db.close()
-
-cost('001',1)
