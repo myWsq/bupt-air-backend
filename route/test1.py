@@ -10,7 +10,7 @@ import threading
 import time
 from model import cnx
 
-timer = Blueprint(__name__,'timer')
+timer = Blueprint(__name__,'test1')
 
 # 进程池,最大允许一个进程后台运行
 executor = ThreadPoolExecutor(1)
