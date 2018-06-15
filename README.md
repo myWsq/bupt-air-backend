@@ -63,6 +63,48 @@ server {
 
 减少重复轮子
 
+
+## 主机部分
+
+#### 类名：mainMachine
+
+##### 属性：
+
+```python
+	main_status = 0     # 表示主机状态，待机0、制冷1、制热2
+    num = 3     # 每秒最多处理请求数目，默认为3条
+    n = 3       # 这一秒内还能接收n条请求
+    choice = 3  # 调度算法选择，随机1、先来先服务2、风速优先3
+    
+    requestList = []    # 这一秒的请求列表
+    responseList = []   # 这一秒要处理的请求列表
+```
+
+##### 不间断处理函数：
+
+```python
+run(self)
+```
+
+##### 对外方法：
+
+```python
+set_status(self, status)      # 设置主机状态
+
+set_number_request(self, number)   # 设置每秒处理的请求数目
+
+set_schedule(self, choice)        # 设置调度类型
+
+```
+
+
+=======
+#计算消费能量及金额
+energy_and_cost.py
+里面有一个名为coster的类，该类有run()和exit方法
+主机启动后实例化一个coster对象，调用run()方法即可一秒更新一次从控机的能量和金额，调用exit()方法即可退出费用计算
+
+=======
 #计算消费能量及金额
 energy_and_cost.py
 里面有一个名为coster的类，该类有run()和exit方法
