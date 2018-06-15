@@ -1,7 +1,7 @@
 '''
 多线程编程示例
 主要思想是在主线程运行时向别的线程抛出一个死循环, 共用内存中的变量.
-运行本地服务器后访问 http://loaclhost:5000/timer
+运行本地服务器后访问 http://loaclhost:5000/test
 测试实际运行情况
 '''
 from flask import Blueprint,request
@@ -10,7 +10,7 @@ import threading
 import time
 from model import cnx
 
-timer = Blueprint(__name__,'timer')
+timer = Blueprint(__name__,'test1')
 
 # 进程池,最大允许一个进程后台运行
 executor = ThreadPoolExecutor(1)
@@ -31,31 +31,21 @@ class mainMachine:
 
     def run(self):
         while True:
-            # print(self.main_status)
-            self.judge_status()
-            self.get_request()
+            print(self.main_status)
             time.sleep(1)
 
     def set_status(self, status):
-        self.main_status = status
-        # self.main_status+=1
+        # self.main_status = status
+        self.main_status+=1
 
-    def print_status(self):
-        print(self.main_status)
-
+    # def print_status(self):
+    #     print(self.main_status)
+    #
     def set_number_request(self, number):
         self.n = number
 
     def set_schedule(self, choice):
         self.choice = choice
-
-    def judge_status(self):
-        cursor = cnx.cursor()
-        query = 'SELECT * FROM `status` where speed<>0 '  # 执行该语句判断有无正在送风的从机
-        cursor.execute(query)
-        statusList = cursor.fetchall()
-        if(statusList is None):     # 从机状态均为关机，主机进行待机操作
-            self.main_status = 0
 
     def get_request(self):
         cursor = cnx.cursor()
@@ -187,8 +177,7 @@ def index():
     if request.method == "GET":
         # 抛出线程
         # executor.submit(todo.run)
-        executor.submit(machine.run)
-        machine.print_status()
+        executor.submit(machine.run())
         return '''
         <h1>Counter was launched in background, Look at your console.<h1>
         <form method="post">
@@ -197,14 +186,7 @@ def index():
         '''
     else:
         # todo.counter+=1
-        status = request.args.get('status')
-        choice = request.args.get('choice')
-        num = request.args.get('re_num')
-
-        machine.set_status(status)
-        machine.set_schedule(choice)
-        machine.set_number_request(num)
-
+        machine.set_status()
         return '''
         <h1>counter add<h1>
         <form method="post">
