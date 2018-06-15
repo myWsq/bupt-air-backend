@@ -1,5 +1,5 @@
 {
-	"host": "api.mywsq.cn",
+	"host": "10.112.26.101",
 	"port": 3306,
 	"user": "bupt",
 	"password": "bupt",
