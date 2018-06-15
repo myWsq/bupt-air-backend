@@ -3,5 +3,5 @@
 	"port": 3306,
 	"user": "bupt",
 	"password": "bupt",
-	"database": "bupt"
+	"database": "buptTest"
 }
