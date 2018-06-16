@@ -1,7 +1,7 @@
 {
-	"host": "10.112.26.101",
+	"host": "tx",
 	"port": 3306,
 	"user": "bupt",
 	"password": "bupt",
-	"database": "buptTest"
+	"database": "bupt"
 }

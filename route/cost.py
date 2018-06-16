@@ -1,20 +1,23 @@
 import json
 from os import path
 import pymysql
+from flask import Blueprint,request,Response
+from concurrent.futures import ThreadPoolExecutor
 import time
+from model import config
 
-class costor:
+class Costor:
 	def __init__(self):
 		self.flag=True
 		# 读取配置文件
-		f = open(path.join(path.dirname(__file__), 'config.json'), 'r')
-		config = json.load(f)
-		f.close()
-		self.db = pymysql.connect(**config)
-		self.cursor = self.db.cursor()
+		self.config = config
 
 	#以秒为单位计算每一台从机的能量及消费金额并更新到从机状态
 	def run(self):
+
+		self.db = pymysql.connect(**self.config)
+		self.cursor = self.db.cursor()
+
 		while self.flag:
 			status={'id':[],'speed':[], 'amount':[]}#存放每一台从控机的状态信息
 
@@ -43,5 +46,21 @@ class costor:
 
 	def exit(self):
 		self.flag=False#为退出计算
-		time.sleep(2)#为了防止最新一次更新未提交
 		self.db.close()
+
+
+cost = Blueprint('cost', __name__)
+costor = Costor()
+cost_executor = ThreadPoolExecutor(1)
+
+@cost.route("/open")
+def open_cost():
+    costor.flag = True
+    cost_executor.submit(costor.run)
+    return Response('ok',200)
+
+@cost.route("/close")
+def close_cost():
+    costor.exit()
+    return Response('ok',200)
+
