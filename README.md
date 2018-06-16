@@ -31,7 +31,7 @@ flask run
 cd bupt-air-backend
 
 # gunicorn
-gunicorn -w 4 app:app
+gunicorn --threads 16 app:app
 
 # Nginx
 
