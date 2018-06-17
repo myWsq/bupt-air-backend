@@ -14,7 +14,8 @@ f.close()
 
 
 class mainMachine:
-    main_status = 1  # 表示主机状态，待机0、制冷1、制热2
+    main_status = 0  # 表示主机状态，待机0、制冷1、制热2
+    past_status = 0     # 记录待机之前的状态模式
     num = 3  # 每秒最多处理请求数目，默认为3条
     n = 3  # 这一秒内还能接收n条请求
     choice = 1  # 调度算法选择，随机1、先来先服务2、风速优先3
@@ -43,6 +44,22 @@ class mainMachine:
 
     def set_status(self, status):  # 设置主机状态
         self.main_status = status
+        cursor = self.db.cursor()
+        query = 'SELECT id,target_temp FROM status '  # 执行该语句判断有无正在送风的从机
+        cursor.execute(query)
+        statusList = cursor.fetchall()
+        if self.main_status == 1:
+            for each in statusList:
+                if each[1] > 25:    # 制冷模式，设定温度大于25度时
+                    update_query = ('update status set target_temp=22 where id=%s'%each[0])
+                    cursor.execute(update_query)
+                    self.db.commit()  # 更新status表
+        if self.main_status == 2:
+            for each in statusList:
+                if each[1] < 25:    # 供暖模式，设定温度小于25度时
+                    update_query = ('update status set target_temp=28 where id=%s'%each[0])
+                    cursor.execute(update_query)
+                    self.db.commit()  # 更新status表
 
     def set_number_request(self, number):  # 设置每秒处理的请求数目
         self.num = number
@@ -52,13 +69,23 @@ class mainMachine:
 
     def judge_status(self):
         cursor = self.db.cursor()
-        query = 'SELECT * FROM `status` where speed<>0 '  # 执行该语句判断有无正在送风的从机
-        cursor.execute(query)
-        statusList = cursor.fetchall()
-        print(statusList)
-        if (statusList == []):  # 从机状态均为关机，主机进行待机操作
-            self.main_status = 0
-            print('no request，set to standby')
+        if self.main_status != 0:
+            query = 'SELECT * FROM `status` where speed<>0 '  # 执行该语句判断有无正在送风的从机
+            cursor.execute(query)
+            statusList = cursor.fetchall()
+            print(statusList)
+            if statusList == []:  # 从机状态均为关机，主机进行待机操作
+                self.past_status = self.main_status
+                self.main_status = 0
+                print('no request，set to standby')
+        else:
+            query2 = 'select * from request limit 1'    # 查询是否有请求
+            cursor.execute(query2)
+            if_request = cursor.fetchall()
+            cursor.close()
+            if if_request != []:    # 存在请求，则将主机状态改为待机前的状态
+                self.main_status = self.past_status
+                print('change back to last status')
 
     def get_request(self):
         print('get request and act')
@@ -174,7 +201,7 @@ class mainMachine:
                 # print(req[4].strftime("%Y-%m-%d %H:%M:%S"))
                 # print(status)
 
-                if (status):  # 从机号合法
+                if status:  # 从机号合法
                     update_query = (
                         'update status set target_temp=%s, speed=%s where id=%s '
                         % (tag_temp, tag_speed, slave_id))  # 更新相应的从机状态
