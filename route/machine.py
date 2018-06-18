@@ -14,8 +14,8 @@ f.close()
 
 
 class mainMachine:
-    main_status = 0  # 表示主机状态，待机0、制冷1、制热2
-    past_status = 0     # 记录待机之前的状态模式
+    main_status = 1  # 表示主机状态，制冷1、制热2
+    is_standby = 1     # 记录是否待机，待机1、运行0
     num = 3  # 每秒最多处理请求数目，默认为3条
     n = 3  # 这一秒内还能接收n条请求
     choice = 1  # 调度算法选择，随机1、先来先服务2、风速优先3
@@ -27,12 +27,13 @@ class mainMachine:
     def run(self):
         self.db = mysql.connector.connect(**config)
         while self.flag:
-            print(self.main_status)
-            self.n = self.num  # 初始化参数
-            self.responseList = []  # 初始化
-            self.requestList = []  # 初始化请求列表
+            print(self.is_standby)
             self.judge_status()
-            self.get_request()
+            if self.is_standby == 0:    # 若为运行状态，则进行请求处理
+                self.n = self.num  # 初始化参数
+                self.responseList = []  # 初始化
+                self.requestList = []  # 初始化请求列表
+                self.get_request()
             time.sleep(1)
 
     def exit(self):
@@ -69,23 +70,24 @@ class mainMachine:
 
     def judge_status(self):
         cursor = self.db.cursor()
-        if self.main_status != 0:
+        if self.is_standby == 0:
             query = 'SELECT * FROM `status` where speed<>0 '  # 执行该语句判断有无正在送风的从机
             cursor.execute(query)
             statusList = cursor.fetchall()
             print(statusList)
             if statusList == []:  # 从机状态均为关机，主机进行待机操作
-                self.past_status = self.main_status
-                self.main_status = 0
+                # self.past_status = self.is_standby
+                self.is_standby = 1
                 print('no request，set to standby')
         else:
             query2 = 'select * from request limit 1'    # 查询是否有请求
             cursor.execute(query2)
             if_request = cursor.fetchall()
-            cursor.close()
+
             if if_request != []:    # 存在请求，则将主机状态改为待机前的状态
-                self.main_status = self.past_status
+                self.is_standby = 0
                 print('change back to last status')
+        cursor.close()
 
     def get_request(self):
         print('get request and act')
@@ -226,37 +228,39 @@ class mainMachine:
                 print('delete request id is: %s\n' % req[0])
 
 
-machine = Blueprint('machine', __name__)
-executor = ThreadPoolExecutor(1)
-m = mainMachine()
-
-
-@machine.route("/open")
-def open():
-    m.flag = True
-    executor.submit(m.run)
-    return Response('ok', 200)
-
-
-@machine.route("/close")
-def close():
-    m.exit()
-    return Response('ok', 200)
-
-
-@machine.route('/info')
-def status():
-    return jsonify({
-        'status': m.main_status,
-        'power': m.num,
-        'scheduling': m.choice
-    })
-
-
-@machine.route('/set', methods=['GET', 'POST'])
-def setting():
-    if request.method == "POST":
-        m.set_number_request(int(request.json['power']))
-        m.set_schedule(int(request.json['scheduling']))
-        m.set_status(int(request.json['status']))
-    return 'ok'
+machine = mainMachine()
+machine.run()
+# machine = Blueprint('machine', __name__)
+# executor = ThreadPoolExecutor(1)
+# m = mainMachine()
+#
+#
+# @machine.route("/open")
+# def open():
+#     m.flag = True
+#     executor.submit(m.run)
+#     return Response('ok', 200)
+#
+#
+# @machine.route("/close")
+# def close():
+#     m.exit()
+#     return Response('ok', 200)
+#
+#
+# @machine.route('/info')
+# def status():
+#     return jsonify({
+#         'status': m.main_status,
+#         'power': m.num,
+#         'scheduling': m.choice
+#     })
+#
+#
+# @machine.route('/set', methods=['GET', 'POST'])
+# def setting():
+#     if request.method == "POST":
+#         m.set_number_request(int(request.json['power']))
+#         m.set_schedule(int(request.json['scheduling']))
+#         m.set_status(int(request.json['status']))
+#     return 'ok'
