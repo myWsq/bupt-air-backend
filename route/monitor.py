@@ -1,16 +1,14 @@
-import mysql.connector
 import time
 import math
-from model import config
 from concurrent.futures import ThreadPoolExecutor
 from flask import Blueprint, jsonify, abort, Response
+from orm import Status, Request
 
-cnx = mysql.connector.connect(**config)
 
 class monitor:
-    id = 1
+    status = None
     out_temp = 0  #外部温度
-    rate = 50 # 变化速率
+    rate = 50  # 变化速率
     cur_temp = 0
     target_temp = 0
     speed = 0
@@ -21,48 +19,25 @@ class monitor:
     last_req = 0
 
     def syntax(self):
-        cursor = cnx.cursor()
-        query = ("SELECT target_temp,speed FROM status WHERE id='%d'" %
-                 (self.id))
-        try:
-            cursor.execute(query)
-            for row in cursor.fetchall():
-                self.target_temp = row[0]
-                self.speed = row[1]
-        except:
-            print("Error: unable to fecth data")
+        self.status = Status.get(Status.id == self.status.id)
+        self.target_temp = self.status.target_temp
+        self.speed = self.status.speed
 
     def update(self):
-        cursor = cnx.cursor()
-        if (self.cur_temp != self.target_temp):
-            query = ("update status set cur_temp='%d' WHERE id='%d'" %
-                     (math.floor(self.cur_temp+1), self.id))
-        else:
-            query = ("update status set cur_temp='%d',speed=0 WHERE id='%d'" %
-                     (math.floor(self.cur_temp+1), self.id))
-        try:
-            cursor.execute(query)
-            cnx.commit()
-        except:
-            print("Error: unable to fecth data")
+        self.status.cur_temp = round(self.cur_temp)
+        if self.cur_temp == self.target_temp: self.status.speed = 0
+        self.status.save()
 
     def request(self):
-        cursor = cnx.cursor()
-        query = ("insert into request(slave_id,speed,temp) values(%d,1,%d)" %
-                 (self.id, self.target_temp))
-        try:
-            cursor.execute(query)
-            cnx.commit()
-        except:
-            print("Error: unable to fecth data")
+        Request(
+            slave_id=self.status.id, speed=1,
+            temp=round(self.target_temp)).save()
 
     def init(self, id, out_temp):
-        self.id = id
+        self.status = Status.get(Status.id == id)
+        self.syntax()
         self.cur_temp = self.out_temp = out_temp
         self.update()
-        self.syntax()
-        print(self.target_temp)
-        print(self.cur_temp)
         self.time = time.time()
 
     def run(self):
@@ -70,7 +45,7 @@ class monitor:
             if (time.time() - self.time > 1e-5):
                 self.syntax()
                 if (self.speed != 0):
-                    a = self.speed*self.rate
+                    a = self.speed * self.rate
                     if (self.target_temp > self.cur_temp):
                         x = a * math.log(
                             (3 * self.target_temp + self.cur_temp) /
@@ -80,9 +55,6 @@ class monitor:
                                             (1 - math.exp(-(x + during) / a)) /
                                             (1 + math.exp(-(x + during) / a)),
                                             self.target_temp)
-
-                        print(self.cur_temp)
-
                     elif (self.target_temp < self.cur_temp):
                         x = a * math.log(
                             (6 * self.out_temp - self.cur_temp - 5 +
@@ -134,24 +106,25 @@ class monitor:
                 self.update()
 
 
-
 ac = monitor()
-
 
 executor = ThreadPoolExecutor(1)
 
 monitor = Blueprint('monitor', __name__)
 
+
 @monitor.route('/init/<id>/<init>')
-def init(id,init):
+def init(id, init):
     ac.init(int(id), int(init))
     executor.submit(ac.run)
     return 'ok'
+
 
 @monitor.route('/open')
 def open():
     ac.switch = True
     return 'ok'
+
 
 @monitor.route('/close')
 def close():
