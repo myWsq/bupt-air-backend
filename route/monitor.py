@@ -5,6 +5,8 @@ from model import config
 from concurrent.futures import ThreadPoolExecutor
 from flask import Blueprint, jsonify, abort, Response
 
+cnx = mysql.connector.connect(**config)
+
 class monitor:
     id = 1
     out_temp = 0  #外部温度
@@ -13,15 +15,13 @@ class monitor:
     target_temp = 0
     speed = 0
 
-    cnx = 0
     switch = False
     time = 0
 
     last_req = 0
-    cnx = mysql.connector.connect(**config)
 
     def syntax(self):
-        cursor = self.cnx.cursor()
+        cursor = cnx.cursor()
         query = ("SELECT target_temp,speed FROM status WHERE id='%d'" %
                  (self.id))
         try:
@@ -33,7 +33,7 @@ class monitor:
             print("Error: unable to fecth data")
 
     def update(self):
-        cursor = self.cnx.cursor()
+        cursor = cnx.cursor()
         if (self.cur_temp != self.target_temp):
             query = ("update status set cur_temp='%d' WHERE id='%d'" %
                      (math.floor(self.cur_temp+1), self.id))
@@ -42,17 +42,17 @@ class monitor:
                      (math.floor(self.cur_temp+1), self.id))
         try:
             cursor.execute(query)
-            self.cnx.commit()
+            cnx.commit()
         except:
             print("Error: unable to fecth data")
 
     def request(self):
-        cursor = self.cnx.cursor()
+        cursor = cnx.cursor()
         query = ("insert into request(slave_id,speed,temp) values(%d,1,%d)" %
                  (self.id, self.target_temp))
         try:
             cursor.execute(query)
-            self.cnx.commit()
+            cnx.commit()
         except:
             print("Error: unable to fecth data")
 

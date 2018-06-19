@@ -2,15 +2,10 @@ import random
 import time
 import mysql.connector
 
-import json
-from os import path
+from model import config
 
 from flask import Blueprint, request, Response, jsonify
 from concurrent.futures import ThreadPoolExecutor
-
-f = open(path.join(path.dirname(path.dirname(__file__)), 'config.json'), 'r')
-config = json.load(f)
-f.close()
 
 
 class mainMachine:

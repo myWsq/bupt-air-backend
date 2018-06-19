@@ -12,7 +12,7 @@ app.register_blueprint(timer, url_prefix='/timer')
 app.register_blueprint(cost, url_prefix='/cost')
 app.register_blueprint(machine, url_prefix='/machine')
 app.register_blueprint(monitor, url_prefix='/monitor')
-
+app.register_blueprint(log, url_prefix='/log')
 
 @app.route("/test")
 def connect_test():
