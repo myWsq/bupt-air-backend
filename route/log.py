@@ -77,3 +77,21 @@ def Cost(start, end, speed):
     elif speed == 3:
         cost = (time.total_seconds() / 60) * 1.3 * 5
     return cost
+
+log = Blueprint('log', __name__)
+
+
+@log.route('today')
+def get_today_log():
+    return jsonify(
+        Generate_Report(
+            datetime.date.today(),
+            datetime.date.today()))
+
+
+@log.route('/', methods=['GET', 'POST'])
+def get():
+    if request.method == 'POST':
+        return jsonify(
+            Generate_Report(request.json['startDate'],
+                            request.json['endDate']))

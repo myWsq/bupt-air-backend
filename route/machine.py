@@ -29,6 +29,7 @@ class mainMachine:
             time.sleep(1)
 
     def exit(self):
+        Status.update(speed=0)
         self.flag = False
 
     def judge_status(self):  # 判断主机是否应该处于待机状态

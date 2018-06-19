@@ -29,9 +29,10 @@ class monitor:
         self.status.save()
 
     def request(self):
-        Request(
-            slave_id=self.status.id, speed=1,
-            temp=round(self.target_temp)).save()
+        req,_ = Request.get_or_create(slave_id=self.status.id)
+        req.speed=1
+        req.temp=round(self.target_temp)
+        req.save()
 
     def init(self, id, out_temp):
         self.status = Status.get(Status.id == id)
