@@ -25,16 +25,18 @@ class mainMachine:
     flag = True
 
     def run(self):
-        self.db = mysql.connector.connect(**config)
+        self.clear_request()
         while self.flag:
-            print(self.is_standby)
+            self.db = mysql.connector.connect(**config)
+            print('standby status ', self.is_standby)
             self.judge_status()
             if self.is_standby == 0:    # 若为运行状态，则进行请求处理
                 self.n = self.num  # 初始化参数
                 self.responseList = []  # 初始化
                 self.requestList = []  # 初始化请求列表
                 self.get_request()
-            time.sleep(1)
+            time.sleep(5)
+            self.db.close()
 
     def exit(self):
         self.flag = False
@@ -42,6 +44,15 @@ class mainMachine:
             self.db.close()
         except AttributeError:
             pass
+
+    def clear_request(self):    # 开机清空请求
+        self.db = mysql.connector.connect(**config)
+        cursor = self.db.cursor()
+        delete_query = 'delete from request'
+        cursor.execute(delete_query)
+        self.db.commit()
+        print('open the machine, and delete all requests')
+        self.db.close()
 
     def set_status(self, status):  # 设置主机状态
         self.main_status = status
@@ -70,24 +81,26 @@ class mainMachine:
 
     def judge_status(self):
         cursor = self.db.cursor()
+        statusList = []
+        if_request = []
         if self.is_standby == 0:
             query = 'SELECT * FROM `status` where speed<>0 '  # 执行该语句判断有无正在送风的从机
             cursor.execute(query)
             statusList = cursor.fetchall()
-            print(statusList)
+            print('status list are ', statusList)
             if statusList == []:  # 从机状态均为关机，主机进行待机操作
                 # self.past_status = self.is_standby
                 self.is_standby = 1
                 print('no request，set to standby')
-        else:
+        if self.is_standby == 1:
             query2 = 'select * from request limit 1'    # 查询是否有请求
             cursor.execute(query2)
             if_request = cursor.fetchall()
+            print('if_request list ', if_request)
 
             if if_request != []:    # 存在请求，则将主机状态改为待机前的状态
                 self.is_standby = 0
                 print('change back to last status')
-        cursor.close()
 
     def get_request(self):
         print('get request and act')
@@ -96,13 +109,13 @@ class mainMachine:
         cursor.execute(query)
         requestCount = cursor.fetchall()
         n_request = requestCount[0][0]
-        print(n_request)
+        print('get request number is ', n_request)
         if n_request > 0:  # 有未响应请求
             query2 = ('SELECT * FROM `request`')
             cursor.execute(query2)
             self.requestList = cursor.fetchall()
             cursor.close()
-            # print(self.requestList)
+            print('when first get request,it is', self.requestList)
             if n_request > self.num:  # 同一时间有大于num条请求
                 self.choose_sort()
             else:
@@ -138,7 +151,7 @@ class mainMachine:
             if i >= self.num:
                 break
             for req in self.requestList:
-                if req[1] == status[0]:
+                if req[1] == status[0] and status[1] == 0 and req[2] != 0:
                     self.responseList.append(req)
                     i = i + 1
                     self.n = self.n - 1
@@ -147,8 +160,11 @@ class mainMachine:
             if req in self.requestList:
                 self.requestList.remove(req)
 
+        print('after add response,questlist are:',self.requestList)
+
         if i >= self.num:  # 若开关机请求大于num，则直接接受请求
             self.response_request(self.responseList)
+            self.responseList = []      # 这一秒内开关机请求已达到本秒处理上限，清空请求列表
 
     def random_sort(self):  # 随机算法
         print('Acting requset in random...')
@@ -187,7 +203,7 @@ class mainMachine:
     def response_request(self, requestList):  # 相应请求
         print('response request!\n')
         cursor = self.db.cursor()
-        print(requestList)
+        print('response list is', requestList)
         for req in requestList:  # 遍历每个请求
             slave_id = req[1]
             tag_speed = req[2]
@@ -221,46 +237,48 @@ class mainMachine:
                 else:
                     print('request log is not legal!\n')
 
-                delete_query = ('delete from request where id=%s' % req[0]
+                delete_query = ('delete from request where slave_id=%s' % req[1]
                                 )  # 无论该从控机id是否合法，均删除相应的请求信息
                 cursor.execute(delete_query)
                 self.db.commit()
-                print('delete request id is: %s\n' % req[0])
+                print('delete request id is: %s from database' % req[0])
 
 
-machine = mainMachine()
-machine.run()
-# machine = Blueprint('machine', __name__)
-# executor = ThreadPoolExecutor(1)
-# m = mainMachine()
+
 #
-#
-# @machine.route("/open")
-# def open():
-#     m.flag = True
-#     executor.submit(m.run)
-#     return Response('ok', 200)
-#
-#
-# @machine.route("/close")
-# def close():
-#     m.exit()
-#     return Response('ok', 200)
-#
-#
-# @machine.route('/info')
-# def status():
-#     return jsonify({
-#         'status': m.main_status,
-#         'power': m.num,
-#         'scheduling': m.choice
-#     })
-#
-#
-# @machine.route('/set', methods=['GET', 'POST'])
-# def setting():
-#     if request.method == "POST":
-#         m.set_number_request(int(request.json['power']))
-#         m.set_schedule(int(request.json['scheduling']))
-#         m.set_status(int(request.json['status']))
-#     return 'ok'
+# machine = mainMachine()
+# machine.run()
+machine = Blueprint('machine', __name__)
+executor = ThreadPoolExecutor(1)
+m = mainMachine()
+
+
+@machine.route("/open")
+def open():
+    m.flag = True
+    executor.submit(m.run)
+    return Response('ok', 200)
+
+
+@machine.route("/close")
+def close():
+    m.exit()
+    return Response('ok', 200)
+
+
+@machine.route('/info')
+def status():
+    return jsonify({
+        'status': m.main_status,
+        'power': m.num,
+        'scheduling': m.choice
+    })
+
+
+@machine.route('/set', methods=['GET', 'POST'])
+def setting():
+    if request.method == "POST":
+        m.set_number_request(int(request.json['power']))
+        m.set_schedule(int(request.json['scheduling']))
+        m.set_status(int(request.json['status']))
+    return 'ok'
