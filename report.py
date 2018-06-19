@@ -16,7 +16,6 @@ def Generate_Report(start, end):
     end_time = datetime.datetime.strptime(str(end), '%Y-%m-%d').strftime("%Y-%m-%d %H:%M:%S")
     Report = []
     cursor = cnx.cursor()
-
     # 查询记录表中不同的从机ID
     slave_id = []
     query = (
@@ -25,9 +24,8 @@ def Generate_Report(start, end):
     cursor.execute(query)
     for m, each in enumerate(cursor):
         Report.append({})
-        Report[m]['ID'] = each[0]
         slave_id.append(each[0])
-
+    slave_id.sort()
     # 依次统计每个从机
     for n, id in enumerate(slave_id):
         query = (
@@ -36,6 +34,7 @@ def Generate_Report(start, end):
         cursor.execute(query)
         # 统计从机开关机次数
         record = []
+        Report[n]['ID'] = id
         Report[n]['Count'] = 0
         for each in cursor:
             record.append(each)
@@ -43,24 +42,24 @@ def Generate_Report(start, end):
                 Report[n]['Count'] = Report[n]['Count'] + 1
         # 整理从机的每一条记录
         Report[n]['Record'] = []
-
+        a = []
         total_cost = 0.0
         for i in range(len(record) - 1):
             # 记录请求的起止时间、温度、风速
-            Report[n]['Record'].append({})
+            a.append({})
             if record[i][3] != 0:
-                Report[n]['Record'][i]['S_time'] = record[i][6].strftime("%Y-%m-%d %H:%M:%S")
-                Report[n]['Record'][i]['E_time'] = record[i+1][6].strftime("%Y-%m-%d %H:%M:%S")
-                Report[n]['Record'][i]['Speed'] = record[i][3]
-                Report[n]['Record'][i]['S_temp'] = record[i][5]
-                Report[n]['Record'][i]['E_temp'] = record[i+1][5]
+                a[i]['S_time'] = record[i][6].strftime("%Y-%m-%d %H:%M:%S")
+                a[i]['E_time'] = record[i+1][6].strftime("%Y-%m-%d %H:%M:%S")
+                a[i]['Speed'] = record[i][3]
+                a[i]['S_temp'] = record[i][5]
+                a[i]['E_temp'] = record[i+1][5]
                 # 计算每次调节请求的花费
                 total_cost = total_cost + Cost(record[i][6], record[i + 1][6], record[i][3])
         Report[n]['Cost'] = '%.2f' % total_cost
         # 删除Record中的空白记录
-        for num, each in enumerate(Report[n]['Record']):
-            if not each:
-                del Report[n]['Record'][num]
+        for each in a:
+            if each:
+                Report[n]['Record'].append(each)
     cnx.close()
     return json.dumps(Report)
 
@@ -73,6 +72,4 @@ def Cost(start, end, speed):
         cost = (time.total_seconds() / 60) * 1 * 5
     elif speed == 3:
         cost = (time.total_seconds() / 60) * 1.3 * 5
-    # print(str(start) + '  ' + str(end) + '  ' + str(speed) + '  '+ str(time.total_seconds() / 60) + '  ' + str(cost))
     return cost
-
