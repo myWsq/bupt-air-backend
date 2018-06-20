@@ -50,8 +50,8 @@ def Generate_Report(start, end):
             # 记录请求的起止时间、温度、风速
             a.append({})
             if record[i][3] != 0:
-                a[i]['S_time'] = record[i][6].strftime("%Y-%m-%d %H:%M:%S")
-                a[i]['E_time'] = record[i+1][6].strftime("%Y-%m-%d %H:%M:%S")
+                a[i]['S_time'] = (record[i][6]+datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
+                a[i]['E_time'] = (record[i+1][6]+datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M:%S")
                 a[i]['Speed'] = record[i][3]
                 a[i]['S_temp'] = record[i][5]
                 a[i]['E_temp'] = record[i+1][5]
