@@ -45,6 +45,7 @@ class mainMachine:
                 item.speed = 0
                 item.save()
                 Log(slave_id=item.id,
+                    card_id=item.card_id,
                     cur_temp=item.cur_temp,
                     target_temp=22,
                     speed=0).save()
@@ -53,6 +54,7 @@ class mainMachine:
                 item.speed = 0
                 item.save()
                 Log(slave_id=item.id,
+                    card_id=item.card_id,
                     cur_temp=item.cur_temp,
                     target_temp=28,
                     speed=0).save()
@@ -79,7 +81,7 @@ class mainMachine:
                 ])
             elif self.choice == 3:
                 self.push(*[
-                   item for item in Request.select().order_by(-Request.speed)
+                    item for item in Request.select().order_by(-Request.speed)
                 ])
             else:
                 raise ValueError('调度策略超出范围')
@@ -96,6 +98,7 @@ class mainMachine:
                         status.speed = 0
                         status.save()
                         Log(slave_id=item.slave_id,
+                            card_id=status.card_id,
                             cur_temp=status.cur_temp,
                             target_temp=item.temp,
                             speed=0,
@@ -105,6 +108,7 @@ class mainMachine:
                         status.speed = item.speed
                         status.save()
                         Log(slave_id=item.slave_id,
+                            card_id=status.card_id,
                             cur_temp=status.cur_temp,
                             target_temp=item.temp,
                             speed=item.speed,
@@ -115,6 +119,7 @@ class mainMachine:
                         status.speed = 0
                         status.save()
                         Log(slave_id=item.slave_id,
+                            card_id=status.card_id,
                             cur_temp=status.cur_temp,
                             target_temp=item.temp,
                             speed=0,
@@ -124,6 +129,7 @@ class mainMachine:
                         status.speed = item.speed
                         status.save()
                         Log(slave_id=item.slave_id,
+                            card_id=status.card_id,
                             cur_temp=status.cur_temp,
                             target_temp=item.temp,
                             speed=item.speed,
