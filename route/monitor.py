@@ -3,6 +3,7 @@ import math
 from concurrent.futures import ThreadPoolExecutor
 from flask import Blueprint, jsonify, abort, Response
 from orm import Status, Request
+from peewee import DoesNotExist
 
 
 class monitor:
@@ -12,7 +13,7 @@ class monitor:
     cur_temp = 0
     target_temp = 0
     speed = 0
-
+    flag = False
     switch = False
     time = 0
 
@@ -29,10 +30,15 @@ class monitor:
         self.status.save()
 
     def request(self):
-        req,_ = Request.get_or_create(slave_id=self.status.id)
-        req.speed=1
-        req.temp=round(self.target_temp)
-        req.save()
+        try:
+            req = Request.get_by_id(self.status.id)
+            req.speed = 1
+            req.temp = round(self.target_temp)
+            req.save()
+        except DoesNotExist:
+            Request(
+                slave_id=self.status.id, speed=1,
+                temp=round(self.target_temp)).save()
 
     def init(self, id, out_temp):
         self.status = Status.get(Status.id == id)
@@ -42,7 +48,8 @@ class monitor:
         self.time = time.time()
 
     def run(self):
-        while True:
+        while self.flag:
+            print('温度计算中')
             if (time.time() - self.time > 1e-5):
                 self.syntax()
                 if (self.speed != 0):
@@ -116,7 +123,12 @@ monitor = Blueprint('monitor', __name__)
 
 @monitor.route('/init/<id>/<init>')
 def init(id, init):
-    ac.init(int(id), int(init))
+    if not ac.flag:
+        ac.init(int(id), int(init))
+        ac.flag = True
+    else:
+        ac.cur_temp = ac.out_temp = int(init)
+        ac.status = Status.get(Status.id == id)
     executor.submit(ac.run)
     return 'ok'
 
@@ -131,3 +143,8 @@ def open():
 def close():
     ac.switch = False
     return 'ok'
+
+
+@monitor.route('/destroy')
+def destroy():
+    ac.flag = False
